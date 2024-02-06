@@ -1,6 +1,5 @@
 "use client";
 
-import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,6 +21,10 @@ import { useRouter } from "next/navigation";
 import { useState, type BaseSyntheticEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { type Database } from "@/lib/schema";
+type Species = Database["public"]["Tables"]["species"]["Update"];
+import { ConfirmDelete } from "./confirm-delete";
+
 
 // We use zod (z) to define a schema for the "Add species" form.
 // zod handles validation of the input values with methods like .string(), .nullable(). It also processes the form inputs with .transform() before the inputs are sent to the database.
@@ -66,21 +69,22 @@ Otherwise, they will be `undefined` by default, which will raise warnings becaus
 All form fields should be set to non-undefined default values.
 Read more here: https://legacy.react-hook-form.com/api/useform/
 */
-const defaultValues: Partial<FormData> = {
-  scientific_name: "",
-  common_name: null,
-  kingdom: "Animalia",
-  total_population: null,
-  image: null,
-  description: null,
-  endangered: false
-};
 
-export default function AddSpeciesDialog({ userId }: { userId: string }) {
+
+export default function EditSpeciesDialog({ speciesId, species, userId}: { speciesId: number; species: Species; userId: string }) {
   const router = useRouter();
-
   // Control open/closed state of the dialog
   const [open, setOpen] = useState<boolean>(false);
+
+  const defaultValues: Partial<FormData> = {
+    scientific_name: species.scientific_name,
+    common_name: species.common_name,
+    kingdom: species.kingdom,
+    total_population: species.total_population,
+    image: species.image,
+    description: species.description,
+    endangered: species.endangered
+  };
 
   // Instantiate form functionality with React Hook Form, passing in the Zod schema (for validation) and default values
   const form = useForm<FormData>({
@@ -92,7 +96,7 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
   const onSubmit = async (input: FormData) => {
     // The `input` prop contains data that has already been processed by zod. We can now use it in a supabase query
     const supabase = createBrowserSupabaseClient();
-    const { error } = await supabase.from("species").insert([
+    const { error } = await supabase.from("species").update(
       {
         author: userId,
         common_name: input.common_name,
@@ -103,7 +107,7 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
         image: input.image,
         endangered: input.endangered
       },
-    ]);
+    ).eq("id", speciesId);
 
     // Catch and report errors from Supabase and exit the onSubmit function with an early 'return' if an error occurred.
     if (error) {
@@ -127,24 +131,24 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
     router.refresh();
 
     return toast({
-      title: "New species added!",
-      description: "Successfully added " + input.scientific_name + ".",
+      title: "Species updated!",
+      description: "Successfully updated " + input.scientific_name + ".",
     });
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary">
-          <Icons.add className="mr-3 h-5 w-5" />
-          Add Species
+        <Button className="bg-emerald-500" variant="secondary" onClick={() => setOpen(true)}>
+          Edit Species
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-screen overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Add Species</DialogTitle>
+          <DialogTitle>Edit Species</DialogTitle>
+          <ConfirmDelete speciesId={speciesId} />
           <DialogDescription>
-            Add a new species here. Click &quot;Add Species&quot; below when you&apos;re done.
+            Edit this species here. Click &quot;Edit Species&quot; below when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -239,7 +243,7 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
                     <FormItem>
                       <FormLabel>Endangered</FormLabel>
                       <FormControl>
-                        <Input type="checkbox" defaultChecked={false} checked={value} {...rest} />
+                        <Input type="checkbox" checked={value} {...rest} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -290,10 +294,13 @@ export default function AddSpeciesDialog({ userId }: { userId: string }) {
               />
               <div className="flex">
                 <Button type="submit" className="ml-1 mr-1 flex-auto">
-                  Add Species
+                  Update
                 </Button>
                 <DialogClose asChild>
-                  <Button type="button" className="ml-1 mr-1 flex-auto" variant="secondary">
+                  <Button type="button"
+                  className="ml-1 mr-1 flex-auto"
+                  variant="secondary"
+                  onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
                 </DialogClose>
