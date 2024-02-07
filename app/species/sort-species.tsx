@@ -58,9 +58,11 @@ export function SortedSpecies({id,species}: {id: string,species: {
       </div>
       <div className="flex flex-wrap justify-center">
         {species?.filter((speciesTemp) =>
-            ((speciesTemp.common_name ? speciesTemp.common_name.includes(search) : false) || (speciesTemp.description ? speciesTemp.description.includes(search) : false) || (speciesTemp.scientific_name ? speciesTemp.scientific_name.includes(search) : false))
-            && (speciesTemp.kingdom === filter || filter === "None")
-          ).sort(function (a,b) {
+            ((speciesTemp.common_name ? speciesTemp.common_name.includes(search) : false) //SEARCH
+              || (speciesTemp.description ? speciesTemp.description.includes(search) : false)
+              || (speciesTemp.scientific_name ? speciesTemp.scientific_name.includes(search) : false))
+            && (speciesTemp.kingdom === filter || filter === "None") // FILTER
+          ).sort(function (a,b) { // SORT ALPHABETICALLY
           if (sortDir){
             if (a.scientific_name < b.scientific_name) {return -1;}
             if (a.scientific_name > b.scientific_name) {return 1;}
