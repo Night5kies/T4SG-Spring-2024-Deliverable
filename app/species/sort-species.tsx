@@ -27,10 +27,19 @@ export function SortedSpecies({id,species}: {id: string,species: {
   return (
     <>
       <div className="flex flex-wrap justify-center">
+
+        {/* SCIENTIFIC NAME ALPHABETICAL SORT */}
+
         <Button  onClick={()=>{setSort(!sortDir);}}> {sortDir ? "A-Z" : "Z-A"} </Button>
+
+        {/* SEARCH BAR */}
+
         <div className="flex w-full max-w-sm items-center space-x-2">
           <Input type="text" placeholder="Search for Species" onChangeCapture={e=>setSearch(e.currentTarget.value)}/>
         </div>
+
+        {/* KINGDOM FILTER */}
+
         <Select onValueChange={(value)=>{setFilter(value)}}>
             <SelectTrigger>
               <SelectValue placeholder="Select a kingdom"/>
