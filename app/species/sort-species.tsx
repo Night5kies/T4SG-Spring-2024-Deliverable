@@ -20,7 +20,7 @@ export function SortedSpecies({id,species}: {id: string,species: {
   endangered: boolean;
 }[]}) {
 
-  const [sortDir, setSort] = React.useState<boolean>(false); // true = sort A-Z, false = sort Z-A
+  const [sortDir, setSort] = React.useState<boolean>(true); // true = sort A-Z, false = sort Z-A
   const [filter, setFilter] = React.useState<string>("None");
   const [search, setSearch] = React.useState<string>("");
 
